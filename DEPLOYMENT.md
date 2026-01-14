@@ -67,9 +67,13 @@ ssh root@YOUR_VPS_IP
 # Update system
 apt update && apt upgrade -y
 
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Install Node.js 24 LTS (current)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 apt install -y nodejs git
+
+# Verify installation
+node --version  # Should show v24.13.0 or higher
+npm --version
 
 # Create application directory
 mkdir -p /var/www/cai-search

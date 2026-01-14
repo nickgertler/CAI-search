@@ -58,8 +58,38 @@ jobs:
       
       - name: Deploy to Droplet
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DROPLET_HOST }} \
-            "cd /var/www/cai-search && bash scripts/deploy.sh"
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DROPLET_HOST }} << 'EOF'
+          set -e
+          
+          # Ensure application directory exists
+          mkdir -p /var/www/cai-search
+          cd /var/www/cai-search
+          
+          # Initialize git if not already done
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin https://github.com/nickgertler/CAI-search.git
+          fi
+          
+          # Pull latest code
+          git fetch origin main
+          git checkout origin/main -- .
+          
+          # Exclude data directory from checkout
+          git checkout HEAD -- server/data/ || true
+          
+          # Install dependencies
+          npm install --production
+          cd client && npm install --production && cd ..
+          
+          # Initialize database if it doesn't exist
+          if [ ! -f server/data/cai_decisions.db ]; then
+            echo "Initializing database..."
+            npm run db:migrate
+          fi
+          
+          echo "✅ Deployment complete!"
+          EOF
       
       - name: Upload built client
         run: |

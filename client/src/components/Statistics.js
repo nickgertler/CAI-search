@@ -11,7 +11,7 @@ function Statistics({ language = 'en' }) {
 
   const fetchStatistics = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/decisions/stats/summary');
+      const response = await fetch('/api/decisions/stats/summary');
       const data = await response.json();
       setStats(data);
     } catch (error) {

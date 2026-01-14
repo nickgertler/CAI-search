@@ -44,7 +44,7 @@ function App() {
 
   const fetchFilterOptions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/decisions/filters/options');
+      const response = await fetch('/api/decisions/filters/options');
       const data = await response.json();
       setFilterOptions(data);
     } catch (error) {
@@ -64,7 +64,7 @@ function App() {
       params.append('limit', ITEMS_PER_PAGE);
 
       const response = await fetch(
-        `http://localhost:5000/api/decisions/search?${params.toString()}`
+        `/api/decisions/search?${params.toString()}`
       );
       const data = await response.json();
       

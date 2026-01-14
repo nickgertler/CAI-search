@@ -90,16 +90,26 @@ chmod 755 data
 cd /var/www/cai-search
 
 # Clone from GitHub (if you have a repo)
-git clone https://github.com/YOUR_USERNAME/CAI-search.git .
+git clone https://github.com/nickgertler/CAI-search.git .
 
 # OR upload via SCP
 # scp -r ./* root@YOUR_VPS_IP:/var/www/cai-search/
 
-# Install dependencies
+# Install server dependencies
 npm install
+
+# Install client dependencies
+cd client
+npm install
+cd ..
 
 # Build React frontend
 npm run build-client
+
+# NOTE: If build fails due to low memory (< 512MB RAM):
+# Build locally on your machine instead, then upload:
+# On local: npm run build-client
+# Then: scp -r client/build root@YOUR_VPS_IP:/var/www/cai-search/client/
 ```
 
 ### Step 4: Initialize Database and Run Initial Scrape
@@ -112,7 +122,7 @@ node server/db/migrate.js
 node server/scraper.js
 
 # Verify data was inserted
-sqlite3 data/decisions.db "SELECT COUNT(*) as decisions FROM decisions;"
+sqlite3 /var/www/cai-search/server/data/cai_decisions.db "SELECT COUNT(*) as decisions FROM decisions;"
 ```
 
 ### Step 5: Start API Server as Background Process
@@ -255,7 +265,7 @@ systemctl enable nginx
 apt install -y certbot python3-certbot-nginx
 
 # Get SSL certificate (requires domain name)
-certbot --nginx -d your-domain.com -d www.your-domain.com
+certbot --nginx -d cai.nog.omg.lol -d cai.nog.omg.lol
 
 # Auto-renewal is configured automatically
 # Verify:
@@ -319,7 +329,7 @@ journalctl -u cai-scraper -n 50
 
 ```bash
 # Verify data is being added
-sqlite3 /var/www/cai-search/data/decisions.db << EOF
+sqlite3 /var/www/cai-search/server/data/cai_decisions.db << EOF
 SELECT COUNT(*) as total_decisions, 
        COUNT(CASE WHEN pdf_text IS NOT NULL THEN 1 END) as with_text,
        MAX(created_at) as latest_update
@@ -359,7 +369,7 @@ tail -20 /var/log/syslog | grep CRON
 
 ```bash
 # Check that database is growing
-sqlite3 /var/www/cai-search/data/decisions.db \
+sqlite3 /var/www/cai-search/server/data/cai_decisions.db \
   "SELECT COUNT(*) FROM decisions;"
 
 # Should be higher than last week
@@ -390,16 +400,17 @@ systemctl restart nginx
 
 ```bash
 # Manual backup
-cp /var/www/cai-search/data/decisions.db \
-   /var/www/cai-search/data/decisions_backup_$(date +%Y%m%d).db
+mkdir -p /var/www/cai-search/backups
+cp /var/www/cai-search/server/data/cai_decisions.db \
+   /var/www/cai-search/backups/cai_decisions_backup_$(date +%Y%m%d).db
 
 # Automatic daily backups at 1 AM:
 crontab -e
 # Add this line:
-0 1 * * * cp /var/www/cai-search/data/decisions.db /var/www/cai-search/data/decisions_$(date +\%Y\%m\%d).db
+0 1 * * * mkdir -p /var/www/cai-search/backups && cp /var/www/cai-search/server/data/cai_decisions.db /var/www/cai-search/backups/cai_decisions_$(date +\%Y\%m\%d).db
 
 # Keep only last 30 days:
-0 1 * * * find /var/www/cai-search/data -name "decisions_*.db" -mtime +30 -delete
+0 1 * * * find /var/www/cai-search/backups -name "cai_decisions_*.db" -mtime +30 -delete
 ```
 
 ---
@@ -454,7 +465,7 @@ systemctl restart cai-search
 systemctl restart cai-search
 
 # Check database integrity
-sqlite3 /var/www/cai-search/data/decisions.db "PRAGMA integrity_check;"
+sqlite3 /var/www/cai-search/server/data/cai_decisions.db "PRAGMA integrity_check;"
 ```
 
 ---
@@ -587,7 +598,7 @@ pm2 logs cai-search
 Most issues will show up there. If stuck, check:
 - `/var/log/nginx/error.log` for web server issues
 - `/var/log/syslog` for system issues
-- Database integrity: `sqlite3 /var/www/cai-search/data/decisions.db "PRAGMA integrity_check;"`
+- Database integrity: `sqlite3 /var/www/cai-search/server/data/cai_decisions.db "PRAGMA integrity_check;"`
 
 ```bash
 sudo apt-get install certbot python3-certbot-nginx
@@ -751,7 +762,7 @@ pm2 restart cai-api
 pm2 restart cai-api
 
 # Check database size
-ls -lh data/cai_decisions.db
+ls -lh server/data/cai_decisions.db
 ```
 
 ### Scraping fails

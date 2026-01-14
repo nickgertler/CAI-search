@@ -1,12 +1,27 @@
 # Quick Start Guide
 
+## ✅ Prerequisites
+
+Before you start, ensure you have:
+- [ ] Node.js v14+ installed (`node --version`)
+- [ ] npm v6+ installed (`npm --version`)
+- [ ] Git installed (`git --version`)
+- [ ] At least 200MB free disk space
+- [ ] Code editor ready (VS Code recommended)
+
 ## Getting Started in 5 Minutes
 
 ### 1. Install Dependencies
 ```bash
 cd CAI-search
+
+# Install backend dependencies
 npm install
-cd client && npm install && cd ..
+
+# Install client dependencies
+cd client
+npm install
+cd ..
 ```
 
 ### 2. Initialize Database & Load Data
@@ -21,6 +36,24 @@ npm run dev
 ```
 
 The application will open at `http://localhost:3000`
+
+---
+
+## ✅ Verify Installation
+
+```bash
+# Check Node modules exist
+ls node_modules | head -5  # Should show some modules
+
+# Check client modules
+ls client/node_modules | head -5  # Should show React
+
+# Check database was created
+ls -la server/data/cai_decisions.db  # Should be ~10MB+
+
+# Check data was loaded
+curl http://localhost:5000/api/health  # Should return {"status":"ok"}
+```
 
 ---
 

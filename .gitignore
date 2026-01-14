@@ -11,3 +11,4 @@ client/build/
 client/node_modules/
 data/*.db
 data/*.db-journal
+DEPLOYMENT.md

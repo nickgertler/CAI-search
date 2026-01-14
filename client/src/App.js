@@ -46,11 +46,19 @@ function App() {
       const response = await fetch(`/api/decisions/search?${params}`);
       const data = await response.json();
       setDecisions(data.decisions || []);
-      setTotalResults(data.total || 0);
+      setPagination({
+        total: data.total || 0,
+        pages: data.pages || 0,
+        page: data.page || 1
+      });
     } catch (error) {
       console.error('Error fetching decisions:', error);
       setDecisions([]);
-      setTotalResults(0);
+      setPagination({
+        total: 0,
+        pages: 0,
+        page: 1
+      });
     } finally {
       setLoading(false);
     }

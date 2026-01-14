@@ -9,7 +9,7 @@ router.get('/search', (req, res) => {
 
   // Select columns, exclude pdf_text for list responses (to keep response size small)
   // Include document_url so frontend can enable download button
-  const selectCols = 'id, decision_number, subject, organization, decision_date, year, document_title, document_url, created_at, updated_at';
+  const selectCols = 'id, decision_number, subject, organization, decision_date, year, document_title, document_url, decision_url, created_at, updated_at';
   let query = `SELECT ${selectCols} FROM decisions WHERE 1=1`;
   const params = [];
 

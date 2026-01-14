@@ -137,20 +137,55 @@ const extractDecisions = (sourceHtml) => {
 
       const decisionNumber = $cells.eq(0).text().trim();
       const subject = $cells.eq(1).text().trim();
-      const decisionDate = $cells.eq(2).text().trim();
-      const documentLink = $cells.eq(3).find('a');
+      
+      // Determine if this is the new format (access requests) or old format (surveillance)
+      // New format has 5 cells: decision_number, subject, transmission_date, diffusion_date, documents
+      // Old format has 4 cells: decision_number, subject, decision_date, documents
+      let decisionDate, documentsCell;
+      
+      if ($cells.length >= 5) {
+        // New format: AI-2526-202 style (access requests)
+        decisionDate = $cells.eq(3).text().trim(); // diffusion_date
+        documentsCell = $cells.eq(4);
+      } else {
+        // Old format: 1031833-S style (surveillance)
+        decisionDate = $cells.eq(2).text().trim();
+        documentsCell = $cells.eq(3);
+      }
       
       if (!decisionNumber) return;
 
-      // Extract from document title link
-      const documentTitle = documentLink.text().trim();
-      const documentUrl = documentLink.attr('href');
+      // Extract all links from the documents cell
+      const $links = documentsCell.find('a');
+      let documentUrl = '';
+      let decisionUrl = '';
+      let documentTitle = '';
       
-      // Parse PDF filename from the title (format: "NUMBER : Décision ...")
-      const pdfMatch = documentTitle.match(/^([^\s]+)\s*:/);
-      const pdf_filename = pdfMatch ? pdfMatch[1] : '';
+      // Process each link - typically "Décision" comes first, then "Document"
+      $links.each((linkIndex, link) => {
+        const $link = $(link);
+        const linkText = $link.text().trim();
+        const linkUrl = $link.attr('href');
+        
+        if (linkText.toLowerCase().includes('décision') || linkText.toLowerCase().includes('decision')) {
+          decisionUrl = linkUrl;
+        } else if (linkText.toLowerCase().includes('document')) {
+          documentUrl = linkUrl;
+        }
+        
+        // Use first link as primary document title if not set
+        if (!documentTitle) {
+          documentTitle = linkText;
+        }
+      });
+      
+      // Fallback: if we only have one link, use it as documentUrl
+      if (!documentUrl && decisionUrl) {
+        documentUrl = decisionUrl;
+        decisionUrl = '';
+      }
 
-      // Try to extract organization from subject or document title
+      // Try to extract organization from subject
       let organization = '';
       const orgMatch = subject.match(/à l'endroit (?:de |du |d')?(.+?)(?:\.|$)/);
       if (orgMatch) {
@@ -159,13 +194,18 @@ const extractDecisions = (sourceHtml) => {
         organization = organization.replace(/\s*\[…\]\s*/g, '').trim();
       }
 
+      // Parse PDF filename from the URL
+      const urlMatch = documentUrl.match(/\/([^/]+\.pdf)/i);
+      const pdf_filename = urlMatch ? urlMatch[1] : '';
+
       decisions.push({
         decision_number: decisionNumber,
         decision_date: decisionDate,
-        subject: subject.substring(0, 500), // Limit subject length
+        subject: subject.substring(0, 500),
         organization: organization.substring(0, 300),
         document_title: documentTitle.substring(0, 500),
         document_url: documentUrl,
+        decision_url: decisionUrl,
         pdf_filename: pdf_filename,
         year: year
       });
@@ -183,8 +223,8 @@ const insertDecisions = (decisions) => {
     const stmt = db.prepare(`
       INSERT OR REPLACE INTO decisions 
       (decision_number, decision_date, subject, organization, document_title, 
-       document_url, pdf_text, year, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       document_url, decision_url, pdf_text, year, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     db.serialize(async () => {
@@ -206,6 +246,7 @@ const insertDecisions = (decisions) => {
               decision.organization,
               decision.document_title,
               decision.document_url,
+              decision.decision_url,
               pdfText,
               decision.year
             ],

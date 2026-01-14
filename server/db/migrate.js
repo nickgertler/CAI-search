@@ -13,6 +13,7 @@ const initDatabase = () => {
           organization TEXT,
           document_title TEXT NOT NULL,
           document_url TEXT,
+          decision_url TEXT,
           year INTEGER NOT NULL,
           pdf_text TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

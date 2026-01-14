@@ -15,3 +15,5 @@ data/*.db
 data/*.db-journal
 DEPLOYMENT.md
 NOG_NOTES.md
+source.html
+added_source.html

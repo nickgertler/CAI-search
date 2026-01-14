@@ -32,6 +32,30 @@ function App() {
 
   const ITEMS_PER_PAGE = 20;
 
+  // Fetch decisions when filters change
+  const fetchDecisions = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.query) params.append('q', filters.query);
+      if (filters.year) params.append('year', filters.year);
+      if (filters.organization) params.append('organization', filters.organization);
+      if (filters.page) params.append('page', filters.page);
+      params.append('limit', ITEMS_PER_PAGE);
+
+      const response = await fetch(`/api/decisions/search?${params}`);
+      const data = await response.json();
+      setDecisions(data.decisions || []);
+      setTotalResults(data.total || 0);
+    } catch (error) {
+      console.error('Error fetching decisions:', error);
+      setDecisions([]);
+      setTotalResults(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch filter options on mount
   useEffect(() => {
     fetchFilterOptions();
@@ -49,35 +73,6 @@ function App() {
       setFilterOptions(data);
     } catch (error) {
       console.error('Error fetching filter options:', error);
-    }
-  };
-
-  const fetchDecisions = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (filters.query) params.append('q', filters.query);
-      if (filters.year) params.append('year', filters.year);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      params.append('page', filters.page);
-      params.append('limit', ITEMS_PER_PAGE);
-
-      const response = await fetch(
-        `/api/decisions/search?${params.toString()}`
-      );
-      const data = await response.json();
-      
-      setDecisions(data.decisions);
-      setPagination({
-        total: data.total,
-        pages: data.pages,
-        page: data.page
-      });
-    } catch (error) {
-      console.error('Error fetching decisions:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

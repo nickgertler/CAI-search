@@ -37,7 +37,7 @@ export const translations = {
     extractedText: 'Extracted Text',
     
     // Footer
-    disclaimer: 'Disclaimer: This website is for informational purposes only. It is not affiliated with, endorsed by, or officially connected to the Commission d\'accès à l\'information (CAI). The information provided here is compiled from publicly available sources and may not reflect all official CAI decisions.',
+    disclaimer: 'This website is for informational purposes only. It is not affiliated with, endorsed by, or officially connected to the Commission d\'accès à l\'information (CAI). The information provided here is compiled from publicly available sources and may not reflect all official CAI decisions.',
     builtBy: 'Built by',
   },
   fr: {
@@ -78,7 +78,7 @@ export const translations = {
     extractedText: 'Texte extrait',
     
     // Footer
-    disclaimer: 'Avis de non-responsabilité : Ce site est fourni à titre informatif uniquement. Il n\'est pas affilié à, approuvé par ou officiellement connecté à la Commission d\'accès à l\'information (CAI). Les informations fournies ici sont compilées à partir de sources accessibles au public et peuvent ne pas refléter l\'ensemble des décisions officielles de la CAI.',
+    disclaimer: 'Ce site est fourni à titre informatif uniquement. Il n\'est pas affilié à, approuvé par ou officiellement connecté à la Commission d\'accès à l\'information (CAI). Les informations fournies ici sont compilées à partir de sources accessibles au public et peuvent ne pas refléter l\'ensemble des décisions officielles de la CAI.',
     builtBy: 'Créé par',
   }
 };

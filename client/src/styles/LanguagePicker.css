@@ -1,0 +1,21 @@
+.language-picker {
+  display: flex;
+  align-items: center;
+}
+
+.lang-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.lang-button:hover {
+  opacity: 1;
+  text-decoration: underline;
+}

@@ -1,0 +1,43 @@
+{
+  "name": "cai-decisions-search",
+  "version": "1.0.0",
+  "description": "Quebec CAI (Commission d'accès à l'information) decisions search and filter platform",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/index.js",
+    "client": "cd client && npm start",
+    "build-client": "cd client && npm run build",
+    "scrape": "node server/scraper.js",
+    "scrape-schedule": "node server/scheduler.js",
+    "parse-pdfs": "node server/parse-pdfs.js",
+    "db:migrate": "node server/db/migrate.js"
+  },
+  "dependencies": {
+    "@mapbox/node-pre-gyp": "^2.0.3",
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.2",
+    "canvas": "^3.2.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.2",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.3.10",
+    "pdfjs-dist": "^5.4.530",
+    "pdfjs-dist-legacy": "^1.0.1",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "concurrently": "^8.1.0"
+  },
+  "keywords": [
+    "CAI",
+    "Quebec",
+    "access to information",
+    "decisions"
+  ],
+  "author": "",
+  "license": "MIT"
+}

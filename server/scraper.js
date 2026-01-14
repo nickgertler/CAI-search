@@ -15,8 +15,34 @@ if (!fs.existsSync(PDF_TEMP_DIR)) {
   fs.mkdirSync(PDF_TEMP_DIR, { recursive: true });
 }
 
-// Read the source HTML file
-const sourceHtml = fs.readFileSync(path.join(__dirname, '../source.html'), 'utf-8');
+// URLs to scrape
+const SCRAPE_URLS = [
+  'https://www.cai.gouv.qc.ca/commission-acces-information/acces-information-de-la-commission/decisions-de-commission-section-surveillance',
+  'https://www.cai.gouv.qc.ca/commission-acces-information/acces-information-de-la-commission/decisions-documents-transmis-cadre-demande-acces-information'
+];
+
+// Fetch HTML from the target URLs
+const fetchSourceHtml = async () => {
+  let combinedHtml = '';
+  
+  for (const url of SCRAPE_URLS) {
+    try {
+      console.log(`Fetching: ${url}`);
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      combinedHtml += response.data;
+      console.log(`Successfully fetched: ${url}`);
+    } catch (error) {
+      console.error(`Failed to fetch ${url}:`, error.message);
+    }
+  }
+  
+  return combinedHtml;
+};
 
 // Download, extract text, and delete PDF file
 const downloadAndExtractPdf = async (url, filename, decisionNumber) => {
@@ -89,7 +115,7 @@ const downloadAndExtractPdf = async (url, filename, decisionNumber) => {
   }
 };
 
-const extractDecisions = () => {
+const extractDecisions = (sourceHtml) => {
   const $ = cheerio.load(sourceHtml);
   const decisions = [];
 
@@ -227,11 +253,20 @@ const scrapeDecisions = async () => {
     await initDatabase();
     
     console.log('Starting to scrape CAI decisions...');
-    const decisions = extractDecisions();
-    console.log(`Extracted ${decisions.length} decisions from source HTML`);
+    
+    // Fetch HTML from target URLs
+    const sourceHtml = await fetchSourceHtml();
+    
+    if (!sourceHtml) {
+      console.error('Failed to fetch HTML from any URL');
+      process.exit(1);
+    }
+    
+    const decisions = extractDecisions(sourceHtml);
+    console.log(`Extracted ${decisions.length} decisions from CAI website`);
     
     if (decisions.length === 0) {
-      console.log('No decisions found. Check the HTML structure.');
+      console.log('No decisions found. Check the HTML structure or URLs.');
       process.exit(0);
     }
 

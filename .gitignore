@@ -9,6 +9,9 @@ dist/
 build/
 client/build/
 client/node_modules/
+server/data/*.db
+server/data/*.db-journal
 data/*.db
 data/*.db-journal
 DEPLOYMENT.md
+NOG_NOTES.md

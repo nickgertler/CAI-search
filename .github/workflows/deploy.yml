@@ -1,0 +1,69 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build React client
+        run: npm run build-client
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-build
+          path: client/build/
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+          path: client/build/
+      
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DROPLET_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to Droplet
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DROPLET_HOST }} \
+            "cd /var/www/cai-search && bash scripts/deploy.sh"
+      
+      - name: Upload built client
+        run: |
+          scp -i ~/.ssh/deploy_key -r client/build/* \
+            root@${{ secrets.DROPLET_HOST }}:/var/www/cai-search/client/build/
+      
+      - name: Restart server
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DROPLET_HOST }} \
+            "systemctl restart cai-search"

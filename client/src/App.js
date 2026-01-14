@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import SearchBar from './components/SearchBar';
 import FilterPanel from './components/FilterPanel';
@@ -33,7 +33,7 @@ function App() {
   const ITEMS_PER_PAGE = 20;
 
   // Fetch decisions when filters change
-  const fetchDecisions = async () => {
+  const fetchDecisions = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -62,7 +62,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, ITEMS_PER_PAGE]);
 
   // Fetch filter options on mount
   useEffect(() => {

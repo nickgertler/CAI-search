@@ -72,7 +72,7 @@ function App() {
   // Fetch decisions when filters change
   useEffect(() => {
     fetchDecisions();
-  }, [filters]);
+  }, [fetchDecisions]);
 
   const fetchFilterOptions = async () => {
     try {
